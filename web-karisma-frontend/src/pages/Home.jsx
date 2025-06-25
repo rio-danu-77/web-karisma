@@ -1,13 +1,17 @@
 // src/pages/Home.jsx
-import React, { useRef } from 'react'
-import Hero from '../components/Hero'
-import CourseCard from '../components/CourseCard'
-import CarouselControls from '../components/CarouselControls'
-import img1 from '../assets/course1.png'
-import img2 from '../assets/course2.png'
-import img3 from '../assets/course3.png'
+import React, { useRef } from 'react';
+import Hero from '../components/Hero';
+import CourseCard from '../components/CourseCard';
+import CarouselControls from '../components/CarouselControls';
+import SpecialProgram from '../components/SpecialProgram';
+import AboutUsCarousel from '../components/AboutUsCarousel';
+import img1 from '../assets/course1.png';
+import img2 from '../assets/course2.png';
+import img3 from '../assets/course3.png';
+import imgTopLeft from '../assets/program-top-left.png'
+import imgBottomRight from '../assets/program-bottom-right.png'
 
-// Dummy data 3 course contoh
+// Dummy data untuk Our Course
 const DUMMY_COURSES = [
   {
     id: 1,
@@ -17,10 +21,10 @@ const DUMMY_COURSES = [
     benefits: [
       'Manajemen waktu dan tugas (Trello, Asana)',
       'Komunikasi profesional (email, Zoom, Slack)',
-      'Dasar-dasar administrasi dan keuangan (QuickBooks, Google Workspace)',
-      'Peluang Karir (Virtual Assistant, Remote Project Manager)',
+      'Dasar-dasar administrasi dan keuangan',
+      'Peluang Karir (VA, Remote Project Manager)',
     ],
-    buttonText: 'Detail Kursus'
+    buttonText: 'Detail Kursus',
   },
   {
     id: 2,
@@ -33,7 +37,7 @@ const DUMMY_COURSES = [
       'Deploy & best practices',
       'Peluang Karir Web/Mobile Developer',
     ],
-    buttonText: 'Join Now'
+    buttonText: 'Detail Kursus',
   },
   {
     id: 3,
@@ -46,42 +50,51 @@ const DUMMY_COURSES = [
       'Branding untuk startup & bisnis',
       'Portfolio & client project',
     ],
-    buttonText: 'Detail Kursus'
-  }
-]
+    buttonText: 'Detail Kursus',
+  },
+];
 
 export default function Home() {
-  const carouselRef = useRef(null)
+  const courseRef = useRef(null);
 
-  const scroll = delta => {
-    carouselRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
-  }
+  const scrollCourses = (delta) => {
+    courseRef.current?.scrollBy({ left: delta, behavior: 'smooth' });
+  };
 
   return (
     <>
-      {/* Hero full-width */}
+      {/* 1. Hero Full-Width */}
       <Hero />
 
-      {/* Our Course Section */}
-       <section className="relative -mt-12 pb-16">
+      {/* 2. Our Course */}
+      <section className="relative -mt-12 pb-16">
         <div className="absolute inset-x-0 top-0 h-12 bg-[#F5F5FA]" />
         <div className="relative max-w-screen-xl mx-auto px-6 md:px-8 bg-white rounded-t-2xl pt-6">
-          <h2 className="text-3xl font-bold text-center text-[#081D54] mb-4">Our Course</h2>
-
+          <h2 className="text-3xl font-bold text-center text-[#081D54] mb-4">
+            Our Course
+          </h2>
           <div
-            ref={carouselRef}
+            ref={courseRef}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-4 auto-rows-fr"
           >
-            {DUMMY_COURSES.map(course => (
-              <CourseCard key={course.id} course={course} />
+            {DUMMY_COURSES.map((c) => (
+              <CourseCard key={c.id} course={c} />
             ))}
           </div>
-
           <div className="flex justify-center mt-4">
-            <CarouselControls onPrev={() => scroll(-300)} onNext={() => scroll(300)} />
+            <CarouselControls
+              onPrev={() => scrollCourses(-300)}
+              onNext={() => scrollCourses(300)}
+            />
           </div>
         </div>
       </section>
+
+      {/* 3. Special Program */}
+      <SpecialProgram />
+
+      {/* 4. About Us Carousel */}
+      <AboutUsCarousel />
     </>
-  )
+  );
 }
