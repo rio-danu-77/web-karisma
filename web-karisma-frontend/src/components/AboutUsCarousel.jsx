@@ -5,10 +5,8 @@ import img1 from '../assets/about1.png'
 import img2 from '../assets/about2.png'
 import img3 from '../assets/about3.png'
 
-// Array gambar
 const SLIDES = [img1, img2, img3]
 
-// Deskripsi per gambar
 const DESCRIPTIONS = [
   'Kelas intensif online dengan mentor profesional, fokus pada pengembangan skill teknis dan soft skill.',
   'Materi terstruktur mulai dari dasar hingga mahir, dilengkapi studi kasus industri nyata.',

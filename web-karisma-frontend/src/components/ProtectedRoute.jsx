@@ -6,7 +6,6 @@ import { AuthContext } from '../contexts/AuthContext';
 export default function ProtectedRoute({ children }) {
   const { user } = useContext(AuthContext);
   if (!user) {
-    // jika belum login → redirect ke /login
     return <Navigate to="/login" replace />;
   }
   return children;

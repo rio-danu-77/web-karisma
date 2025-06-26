@@ -1,97 +1,69 @@
 // src/pages/Dashboard.jsx
 import React, { useContext } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import Sidebar from '../components/Sidebar'
 import { AuthContext } from '../contexts/AuthContext'
-import logo from '../assets/logo.png'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts'
 
 export default function Dashboard() {
-  const { user, logout } = useContext(AuthContext)
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/', { replace: true })
-  }
-
-  // Contoh data statis untuk user
+  const { user } = useContext(AuthContext)
   const activeCourses = [
-    { title: 'Desain UI/UX',    progress: 45 },
-    { title: 'Next.js & React', progress: 80 },
-    { title: 'Data Science',    progress: 30 },
+    { title: 'Desain UI/UX', progress: 20 },
+    { title: 'Pemrograman Next.js', progress: 80 },
+    { title: 'Data Science', progress: 45 }
   ]
   const upcoming = [
     { date: '18 Jun 2025', desc: 'Kuis Modul 3', status: 'Mendatang' },
     { date: '20 Jun 2025', desc: 'Live Workshop Figma', status: 'Join' },
-    { date: '25 Jun 2025', desc: 'Submit Project Akhir', status: 'Pending' },
+    { date: '25 Jun 2025', desc: 'Submit Project Akhir', status: 'Pending' }
+  ]
+  const statsData = [
+    { name: 'UI/UX', value: 20 },
+    { name: 'Next.js', value: 80 },
+    { name: 'Data Sci.', value: 45 }
   ]
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-blue-900 text-white flex flex-col">
-        <div className="p-6 flex items-center border-b border-blue-800">
-          <img src={logo} alt="Logo" className="h-8 mr-2" />
-          <span className="text-lg font-bold">Karisma</span>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          {[
-            { to: '/dashboard',        label: 'Home' },
-            { to: '/dashboard/profile',label: 'Profile' },
-            { to: '/dashboard/courses',label: 'Kursus' },
-            { to: '/dashboard/settings', label: 'Pengaturan' },
-          ].map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded-md font-medium ${
-                  isActive ? 'bg-blue-700' : 'hover:bg-blue-700'
-                }`
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <button
-          onClick={handleLogout}
-          className="m-4 bg-red-500 hover:bg-red-600 py-2 rounded-md font-medium"
-        >
-          Logout
-        </button>
-        <div className="mt-auto p-4 text-xs text-gray-300">
-          © 2025 Karisma Academy
-        </div>
-      </aside>
+      {/* Sidebar kiri */}
+      <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">
+      {/* Konten utama */}
+      <main className="flex-1 p-8 space-y-8">
+        {/* Header sapaan */}
+        <header>
+          <h1 className="text-3xl font-bold mb-2">
             Hai, {user.name} 👋
           </h1>
-          <p className="text-gray-600">
-            Anda login sebagai <strong>{user.role}</strong>
-          </p>
+          <p className="text-gray-600">Selamat datang di dashboard Anda.</p>
         </header>
 
+        {/* Kursus Aktif & Jadwal */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Kursus Aktif */}
           <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Kursus Aktif</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2">📋</span>
+              Kursus Aktif
+            </h2>
             <ul className="space-y-4">
               {activeCourses.map((c, i) => (
-                <li key={i} className="space-y-2">
-                  <div className="flex justify-between items-center">
+                <li key={i}>
+                  <div className="flex justify-between items-center mb-1">
                     <span className="font-medium">{c.title}</span>
                     <button className="text-blue-600 hover:underline text-sm">
                       Lanjutkan
                     </button>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="h-2 bg-gray-200 rounded-full">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="h-2 bg-blue-600 rounded-full"
                       style={{ width: `${c.progress}%` }}
                     />
                   </div>
@@ -100,9 +72,12 @@ export default function Dashboard() {
             </ul>
           </section>
 
-          {/* Jadwal Mendatang */}
+          {/* Jadwal */}
           <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Jadwal Mendatang</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2">📅</span>
+              Jadwal Mendatang
+            </h2>
             <ul className="space-y-3">
               {upcoming.map((e, i) => (
                 <li
@@ -110,7 +85,7 @@ export default function Dashboard() {
                   className="flex justify-between items-center p-3 bg-gray-50 rounded"
                 >
                   <div>
-                    <span className="font-semibold">{e.date}</span>{' '}
+                    <span className="font-semibold mr-2">{e.date}</span>
                     <span className="text-gray-600">{e.desc}</span>
                   </div>
                   <span
@@ -130,15 +105,27 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Statistik */}
-        <section className="mt-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
-          <h2 className="text-xl font-semibold mb-4">Statistik Anda</h2>
-          <div className="h-48 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-            {/* Nantinya bisa ganti dengan chart Recharts */}
-            <span className="text-lg">[Chart Placeholder]</span>
+        {/* Statistik Anda */}
+        <section className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <span className="mr-2">📊</span>
+            Statistik Anda
+          </h2>
+          <div className="w-full h-52 bg-white bg-opacity-20 rounded-lg p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={statsData}>
+                <XAxis dataKey="name" stroke="#fff" />
+                <YAxis stroke="#fff" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1e3a8a' }}
+                  itemStyle={{ color: '#fff' }}
+                />
+                <Bar dataKey="value" fill="#fff" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </section>
       </main>
     </div>
-)
+  )
 }

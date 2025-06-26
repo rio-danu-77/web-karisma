@@ -16,7 +16,6 @@ export default function LoginForm() {
     try {
       const { user } = await login(email, password);
       localStorage.setItem('auth', JSON.stringify(user));
-      // redirect depending on role
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.message);

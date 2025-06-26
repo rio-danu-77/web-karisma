@@ -29,7 +29,7 @@ export default function CourseCard({ course }) {
         </ul>
       </div>
 
-      {/* Tombol di paling bawah */}
+      {/* Tombol di bawah */}
       <button className="mt-6 w-full bg-white border border-black rounded-lg py-2 font-semibold text-[#081D54] hover:bg-gray-100 transition">
         {course.buttonText}
       </button>

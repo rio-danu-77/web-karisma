@@ -1,5 +1,12 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import React from 'react'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation
+} from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -11,7 +18,6 @@ import Dashboard from './pages/Dashboard'
 
 function LayoutWithNavbar({ children }) {
   const { pathname } = useLocation()
-  // daftar path yang TIDAK boleh pakai Navbar:
   const noNav = ['/login', '/register']
   return (
     <>
@@ -31,13 +37,14 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
-              path="/dashboard"
+              path="/dashboard/*"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </LayoutWithNavbar>
       </BrowserRouter>

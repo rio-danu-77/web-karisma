@@ -61,10 +61,10 @@ export default function Home() {
 
   return (
     <>
-      {/* 1. Hero Full-Width */}
+      {/* Hero Full-Width */}
       <Hero />
 
-      {/* 2. Our Course */}
+      {/* Our Course */}
       <section className="relative -mt-12 pb-16">
         <div className="absolute inset-x-0 top-0 h-12 bg-[#F5F5FA]" />
         <div className="relative max-w-screen-xl mx-auto px-6 md:px-8 bg-white rounded-t-2xl pt-6">
@@ -90,13 +90,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. Special Program */}
+      {/* Special Program */}
       <SpecialProgram />
 
-      {/* 4. About Us Carousel */}
+      {/* About Us Carousel */}
       <AboutUsCarousel />
 
-      {/* 5. Video Section */}
+      {/* Video Section */}
       <VideoSection />
     </>
   )

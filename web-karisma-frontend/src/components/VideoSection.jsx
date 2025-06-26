@@ -9,7 +9,7 @@ export default function VideoSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-[#67B1FB] to-[#2F80ED]" />
 
       <div className="relative max-w-screen-xl mx-auto px-6 md:px-8 flex flex-col lg:flex-row items-start gap-8">
-        {/* Video Lokal (60% width, 16:9 aspect) */}
+        {/* Video */}
         <div className="w-full lg:w-[60%]">
           <div className="relative w-full pb-[56.25%] rounded-3xl overflow-hidden border-2 border-white shadow-md">
             <video
@@ -20,7 +20,7 @@ export default function VideoSection() {
           </div>
         </div>
 
-        {/* Card Deskripsi (35% width, sedikit lebih tinggi) */}
+        {/* Card Deskripsi */}
         <div
           className="w-full lg:w-[35%] bg-white rounded-3xl border-2 border-white shadow-md p-6 flex flex-col"
           style={{ minHeight: '360px' }}
