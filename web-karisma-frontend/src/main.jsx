@@ -1,12 +1,7 @@
-// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-
-// Global styles: Tailwind base + components + utilities
 import './index.css';
-
-// FontAwesome untuk ikon
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 ReactDOM

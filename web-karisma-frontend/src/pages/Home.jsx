@@ -1,17 +1,15 @@
 // src/pages/Home.jsx
-import React, { useRef } from 'react';
-import Hero from '../components/Hero';
-import CourseCard from '../components/CourseCard';
-import CarouselControls from '../components/CarouselControls';
-import SpecialProgram from '../components/SpecialProgram';
-import AboutUsCarousel from '../components/AboutUsCarousel';
-import img1 from '../assets/course1.png';
-import img2 from '../assets/course2.png';
-import img3 from '../assets/course3.png';
-import imgTopLeft from '../assets/program-top-left.png'
-import imgBottomRight from '../assets/program-bottom-right.png'
+import React, { useRef } from 'react'
+import Hero from '../components/Hero'
+import CourseCard from '../components/CourseCard'
+import CarouselControls from '../components/CarouselControls'
+import SpecialProgram from '../components/SpecialProgram'
+import AboutUsCarousel from '../components/AboutUsCarousel'
+import VideoSection from '../components/VideoSection'
+import img1 from '../assets/course1.png'
+import img2 from '../assets/course2.png'
+import img3 from '../assets/course3.png'
 
-// Dummy data untuk Our Course
 const DUMMY_COURSES = [
   {
     id: 1,
@@ -52,14 +50,14 @@ const DUMMY_COURSES = [
     ],
     buttonText: 'Detail Kursus',
   },
-];
+]
 
 export default function Home() {
-  const courseRef = useRef(null);
+  const courseRef = useRef(null)
 
-  const scrollCourses = (delta) => {
-    courseRef.current?.scrollBy({ left: delta, behavior: 'smooth' });
-  };
+  const scrollCourses = delta => {
+    courseRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
+  }
 
   return (
     <>
@@ -75,10 +73,12 @@ export default function Home() {
           </h2>
           <div
             ref={courseRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-4 auto-rows-fr"
+            className="flex space-x-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4"
           >
-            {DUMMY_COURSES.map((c) => (
-              <CourseCard key={c.id} course={c} />
+            {DUMMY_COURSES.map(course => (
+              <div key={course.id} className="snap-center">
+                <CourseCard course={course} />
+              </div>
             ))}
           </div>
           <div className="flex justify-center mt-4">
@@ -95,6 +95,9 @@ export default function Home() {
 
       {/* 4. About Us Carousel */}
       <AboutUsCarousel />
+
+      {/* 5. Video Section */}
+      <VideoSection />
     </>
-  );
+  )
 }

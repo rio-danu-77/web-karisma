@@ -1,55 +1,90 @@
 // src/components/AboutUsCarousel.jsx
 import React, { useState } from 'react'
-import about1 from '../assets/about1.png'
-import about2 from '../assets/about2.png'
-import about3 from '../assets/about3.png'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import img1 from '../assets/about1.png'
+import img2 from '../assets/about2.png'
+import img3 from '../assets/about3.png'
 
-const SLIDES = [about1, about2, about3]
+// Array gambar
+const SLIDES = [img1, img2, img3]
+
+// Deskripsi per gambar
+const DESCRIPTIONS = [
+  'Kelas intensif online dengan mentor profesional, fokus pada pengembangan skill teknis dan soft skill.',
+  'Materi terstruktur mulai dari dasar hingga mahir, dilengkapi studi kasus industri nyata.',
+  'Dukungan komunitas & portofolio project untuk memudahkan kamu memasuki dunia kerja.'
+]
 
 export default function AboutUsCarousel() {
-  const [idx, setIdx] = useState(0)
+  const [current, setCurrent] = useState(1)
 
-  const prev = () => setIdx(i => (i - 1 + SLIDES.length) % SLIDES.length)
-  const next = () => setIdx(i => (i + 1) % SLIDES.length)
+  const prev = () =>
+    setCurrent(i => (i - 1 + SLIDES.length) % SLIDES.length)
+  const next = () =>
+    setCurrent(i => (i + 1) % SLIDES.length)
 
   return (
-    <section className="bg-[#F5F5FA] py-16">
-      <h2 className="text-3xl font-bold text-center mb-8">About Us</h2>
-      <div className="max-w-screen-md mx-auto relative">
-        {/* Slides */}
-        <div className="grid grid-cols-3 gap-4">
-          {SLIDES.map((src, i) => (
+    <section className="relative bg-[#F5F5FA] py-20 px-4">
+      {/* Badge “About Us” */}
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                      bg-white px-8 py-3 rounded-full shadow-md border border-gray-200
+                      text-[#081D54] font-extrabold text-2xl">
+        About Us
+      </div>
+
+      <div className="max-w-screen-lg mx-auto mt-8">
+        {/* Carousel */}
+        <div className="relative flex items-center justify-center">
+          {/* Prev */}
+          <button
+            onClick={prev}
+            className="absolute left-0 text-4xl text-gray-700 hover:text-black"
+            aria-label="Previous"
+          >
+            <FaChevronLeft />
+          </button>
+
+          {/* Slides */}
+          <div className="flex items-center gap-6">
+            {/* Left small */}
             <img
-              key={i}
-              src={src}
-              alt={`About ${i+1}`}
-              className={`
-                rounded-lg border-2 border-[#081D54] shadow-lg
-                transition-opacity duration-500
-                ${i === idx ? 'opacity-100' : 'opacity-40'}
-              `}
+              src={SLIDES[(current - 1 + SLIDES.length) % SLIDES.length]}
+              alt="About us side"
+              className="w-40 h-40 object-cover rounded-lg opacity-50"
             />
-          ))}
+            {/* Center large */}
+            <img
+              src={SLIDES[current]}
+              alt="About us main"
+              className="w-72 h-72 object-cover rounded-xl border-4 border-[#081D54] shadow-xl"
+            />
+            {/* Right small */}
+            <img
+              src={SLIDES[(current + 1) % SLIDES.length]}
+              alt="About us side"
+              className="w-40 h-40 object-cover rounded-lg opacity-50"
+            />
+          </div>
+
+          {/* Next */}
+          <button
+            onClick={next}
+            className="absolute right-0 text-4xl text-gray-700 hover:text-black"
+            aria-label="Next"
+          >
+            <FaChevronRight />
+          </button>
         </div>
 
-        {/* Prev/Next */}
-        <button
-          onClick={prev}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
-        >
-          ‹
-        </button>
-        <button
-          onClick={next}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
-        >
-          ›
-        </button>
-
-        {/* Text below */}
-        <p className="mt-8 text-center text-gray-700 px-4">
-          Program kelas reguler merupakan pelatihan online secara intensif dan live bersama mentor berpengalaman. Materi kursus dirancang secara terstruktur dari dasar hingga lanjut dengan standar industri terkini.
-        </p>
+        {/* Judul & Paragraf Dinamis */}
+        <div className="mt-10 text-center px-6">
+          <h3 className="text-3xl font-extrabold text-[#081D54] mb-4">
+            Information About Us
+          </h3>
+          <p className="text-[#2F80ED] max-w-2xl mx-auto leading-relaxed text-xl">
+            {DESCRIPTIONS[current]}
+          </p>
+        </div>
       </div>
     </section>
   )
