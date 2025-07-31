@@ -4,11 +4,11 @@ const {
   Enrollment, Notification,
   sequelize
 } = require('../models');
-const snap = require('../services/midtrans');
+const midtransClient = require('midtrans-client');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
 
-// Helper: handle validation errors
+// Helper: tangani validation errors
 function handleValidationErrors(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -72,35 +72,34 @@ module.exports = {
       const course = await Course.findByPk(course_id, { transaction: t });
       if (!course) throw new Error('Kursus tidak ditemukan');
 
-      const already = await Payment.findOne({
-        where: { user_id: req.user.id, course_id },
+      // cek sudah bayar?
+      const paid = await Payment.findOne({
+        where: { user_id: req.user.id, course_id, status: 'paid' },
         transaction: t
       });
-      if (already) throw new Error('Sudah membeli');
+      if (paid) throw new Error('Anda sudah membeli kursus ini');
 
-      const isManual = method === 'manual';
-      const status   = isManual ? 'paid' : 'pending';
-      const paid_at  = isManual ? new Date() : null;
-      const trxRef   = `${method.toUpperCase()}-${Date.now()}-${req.user.id}`;
+      const trxRef = `${method.toUpperCase()}-${Date.now()}-${req.user.id}`;
+      let payment, snapToken = null, enrollment = null;
 
-      const payment = await Payment.create({
-        user_id: req.user.id,
-        course_id,
-        transaction_reference: trxRef,
-        method,
-        amount: course.price,
-        status,
-        paid_at
-      }, { transaction: t });
+      if (method === 'manual') {
+        // manual langsung paid + enroll
+        payment = await Payment.create({
+          user_id: req.user.id,
+          course_id,
+          transaction_reference: trxRef,
+          method,
+          amount: course.price,
+          status: 'paid',
+          paid_at: new Date()
+        }, { transaction: t });
 
-      let enrollment = null, snapToken = null;
-
-      if (isManual) {
         [enrollment] = await Enrollment.findOrCreate({
           where: { user_id: req.user.id, course_id },
           defaults: { status: 'in_progress', progress: 0, enrolled_at: new Date() },
           transaction: t
         });
+
         await Notification.create({
           user_id: req.user.id,
           type: 'success',
@@ -108,70 +107,99 @@ module.exports = {
           status: 'unread',
           created_at: new Date()
         }, { transaction: t });
+
       } else {
+        // midtrans: create pending & snapToken
+        payment = await Payment.create({
+          user_id: req.user.id,
+          course_id,
+          transaction_reference: trxRef,
+          method,
+          amount: course.price,
+          status: 'pending'
+        }, { transaction: t });
+
+        const snap = new midtransClient.Snap({
+          isProduction: false,
+          serverKey: process.env.MIDTRANS_SERVER_KEY,
+          clientKey: process.env.VITE_MIDTRANS_CLIENT_KEY
+        });
+
         const snapRes = await snap.createTransaction({
           transaction_details: { order_id: trxRef, gross_amount: course.price },
-          credit_card: { secure: true },
-          customer_details: { first_name: req.user.name, email: req.user.email }
+          credit_card:       { secure: true },
+          customer_details:  { first_name: req.user.name, email: req.user.email }
         });
         snapToken = snapRes.token;
+
+        // simpan token
+        payment.snap_token = snapToken;
+        await payment.save({ transaction: t });
       }
 
       await t.commit();
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
-        message: isManual
-          ? 'Pembayaran manual berhasil'
-          : 'Selesaikan pembayaran via Midtrans',
-        data: { payment, enrollment, snapToken }
+        data: {
+          orderId:     payment.transaction_reference,
+          courseTitle: course.title,
+          quantity:    1,
+          amount:      payment.amount,
+          snapToken
+        }
       });
+
     } catch (err) {
       await t.rollback();
-      console.error(err);
-      res.status(500).json({ success: false, error: err.message });
+      console.error('❌ Checkout error:', err);
+      const status = err.message.startsWith('Anda sudah') ? 400 : 500;
+      return res.status(status).json({ success: false, error: err.message });
     }
   },
 
   // POST /api/payments/notification (Midtrans webhook)
-handleNotification: async (req, res) => {
-  try {
-    const notif = req.body;
+  handleNotification: async (req, res) => {
+    try {
+      const notif = req.body;
+      const serverKey = process.env.MIDTRANS_SERVER_KEY;
+      const expected = crypto.createHash('sha512')
+        .update(notif.order_id + notif.status_code + notif.gross_amount + serverKey)
+        .digest('hex');
+      if (notif.signature_key !== expected)
+        return res.status(403).json({ message: 'Invalid signature' });
 
-    // ✅ Verifikasi signature key (opsional tapi penting)
-    const crypto = require('crypto');
-    const serverKey = process.env.MIDTRANS_SERVER_KEY;
-    const hash = crypto.createHash('sha512')
-      .update(notif.order_id + notif.status_code + notif.gross_amount + serverKey)
-      .digest('hex');
+      const payment = await Payment.findOne({
+        where: { transaction_reference: notif.order_id }
+      });
+      if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-    if (notif.signature_key !== hash) {
-      return res.status(403).json({ message: 'Invalid signature' });
+      if (notif.transaction_status === 'settlement') {
+        payment.status = 'paid';
+        payment.paid_at = new Date();
+        await payment.save();
+
+        await Enrollment.findOrCreate({
+          where: { user_id: payment.user_id, course_id: payment.course_id },
+          defaults: { status: 'in_progress', progress: 0, enrolled_at: new Date() }
+        });
+        await Notification.create({
+          user_id: payment.user_id,
+          type: 'success',
+          content: `Pembayaran kursus berhasil!`,
+          status: 'unread',
+          created_at: new Date()
+        });
+      } else if (['deny','expire','cancel'].includes(notif.transaction_status)) {
+        payment.status = 'failed';
+        await payment.save();
+      }
+
+      return res.status(200).json({ message: 'OK' });
+    } catch (error) {
+      console.error('❌ notification error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
     }
-
-    // ✅ Ambil data pembayaran dari DB berdasarkan order_id
-    const payment = await Payment.findOne({ where: { transaction_reference: notif.order_id } });
-    if (!payment) {
-      return res.status(404).json({ message: 'Payment not found' });
-    }
-
-    // ✅ Update status sesuai response dari Midtrans
-    let newStatus = notif.transaction_status;
-    if (newStatus === 'settlement') {
-      payment.status = 'success';
-    } else if (newStatus === 'pending') {
-      payment.status = 'pending';
-    } else if (newStatus === 'deny' || newStatus === 'expire' || newStatus === 'cancel') {
-      payment.status = 'failed';
-    }
-
-    await payment.save();
-
-    res.status(200).json({ message: 'Notification handled successfully' });
-  } catch (error) {
-    console.error('❌ Error handling notification:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-},
+  },
 
   // PATCH /api/payments/:id/confirm (admin)
   confirmPayment: async (req, res) => {
